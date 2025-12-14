@@ -5,6 +5,7 @@ import '../services/database_service.dart';
 import '../services/camera_service.dart';
 import '../services/location_service.dart';
 import '../widgets/location_picker.dart';
+import '../services/backend_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -169,6 +170,22 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   // Log user action for demo
   print('[UI] User created new task title="${newTask.title}"');
   await DatabaseService.instance.create(newTask);
+  try {
+    final api = BackendService();
+    String? imageKey;
+    if (_photoPath != null) {
+      final upload = await api.uploadImageFile(File(_photoPath!));
+      imageKey = upload['key'] as String?;
+    }
+    await api.createTask(
+      title: newTask.title,
+      description: newTask.description,
+      imageKey: imageKey,
+    );
+    print('[SYNC] Task synced to LocalStack backend');
+  } catch (syncError) {
+    print('⚠️ Sync error: $syncError');
+  }
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -193,6 +210,22 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   // Log user action for demo
   print('[UI] User edited task id=${updatedTask.id} title="${updatedTask.title}"');
   await DatabaseService.instance.update(updatedTask);
+  try {
+    final api = BackendService();
+    String? imageKey;
+    if (_photoPath != null) {
+      final upload = await api.uploadImageFile(File(_photoPath!));
+      imageKey = upload['key'] as String?;
+    }
+    await api.createTask(
+      title: updatedTask.title,
+      description: updatedTask.description,
+      imageKey: imageKey,
+    );
+    print('[SYNC] Task updated synced to LocalStack backend');
+  } catch (syncError) {
+    print('⚠️ Sync error (update): $syncError');
+  }
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -282,7 +315,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     
                     // PRIORIDADE
                     DropdownButtonFormField<String>(
-                      value: _priority,
+                      initialValue: _priority,
                       decoration: const InputDecoration(
                         labelText: 'Prioridade',
                         prefixIcon: Icon(Icons.flag),
@@ -307,7 +340,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       subtitle: Text(_completed ? 'Sim' : 'Não'),
                       value: _completed,
                       onChanged: (value) => setState(() => _completed = value),
-                      activeColor: Colors.green,
+                      activeThumbColor: Colors.green,
                       secondary: Icon(
                         _completed ? Icons.check_circle : Icons.radio_button_unchecked,
                         color: _completed ? Colors.green : Colors.grey,

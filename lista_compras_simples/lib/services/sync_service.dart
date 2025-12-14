@@ -120,7 +120,7 @@ class SyncService {
       description: '${local.description} (alterado no servidor)'
     );
 
-    print('[SYNC] Simulating server edit for id=${taskId} serverLastModified=${serverTs.toIso8601String()} (enqueued)');
+    print('[SYNC] Simulating server edit for id=$taskId serverLastModified=${serverTs.toIso8601String()} (enqueued)');
     await db.enqueueServerChange(serverTask);
     return true;
   }

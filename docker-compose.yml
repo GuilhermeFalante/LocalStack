@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  localstack-task-manager:
+    image: localstack/localstack:latest
+    container_name: localstack-task-manager
+    ports:
+      - "4566:4566"  # Edge port for all services
+      - "4510-4559:4510-4559"  # Service ports
+    environment:
+      - SERVICES=s3,sqs,sns,dynamodb
+      - DEBUG=1
+      - HOSTNAME_EXTERNAL=localhost
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+    volumes:
+      - ./localstack/init:/docker-entrypoint-initaws.d
+      - localstack-data:/var/lib/localstack
+    networks:
+      - localstack-net
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "awslocal sts get-caller-identity >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  localstack-data:
+
+networks:
+  localstack-net:
+    driver: bridge

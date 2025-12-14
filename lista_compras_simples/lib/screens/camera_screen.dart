@@ -16,16 +16,11 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   bool _isCapturing = false;
+  bool _closed = false;
 
   @override
   void initState() {
     super.initState();
-    
-    if (!widget.controller.value.isInitialized) {
-      widget.controller.initialize().then((_) {
-        if (mounted) setState(() {});
-      });
-    }
   }
 
   Future<void> _takePicture() async {
@@ -38,6 +33,7 @@ class _CameraScreenState extends State<CameraScreen> {
       final savedPath = await CameraService.instance.savePicture(image);
       
       if (mounted) {
+        setState(() { _closed = true; });
         Navigator.pop(context, savedPath);
       }
     } catch (e) {
@@ -54,7 +50,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.controller.value.isInitialized) {
+    if (_closed || !widget.controller.value.isInitialized) {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
